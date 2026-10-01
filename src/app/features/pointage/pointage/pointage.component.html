@@ -7,3 +7,60 @@
 	</div>
 	<button class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-200" type="button" (click)="logout()">Se déconnecter</button>
 </header>
+
+<main class="min-h-screen bg-slate-100 px-4 py-8 sm:px-8">
+	<div class="mx-auto max-w-4xl space-y-6">
+		<section class="rounded-2xl bg-white p-6 shadow-lg shadow-slate-200/70 sm:p-8" aria-labelledby="attendance-title">
+			<div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+				<div>
+					<p class="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">Pointage</p>
+					<h1 id="attendance-title" class="mt-2 text-2xl font-bold tracking-tight text-slate-900">Votre journée</h1>
+					@if (openSession(); as session) {
+						<p class="mt-2 text-sm text-emerald-700">Présent depuis {{ formatTime(session.checkIn) }}</p>
+					} @else {
+						<p class="mt-2 text-sm text-slate-500">Absent</p>
+					}
+				</div>
+
+				@if (openSession()) {
+					<button class="rounded-lg bg-amber-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-700 focus:outline-none focus:ring-4 focus:ring-amber-200 disabled:cursor-not-allowed disabled:bg-slate-300" type="button" [disabled]="loading()" (click)="checkOut()">
+						{{ loading() ? 'Enregistrement...' : 'Pointer la sortie' }}
+					</button>
+				} @else {
+					<button class="rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-200 disabled:cursor-not-allowed disabled:bg-slate-300" type="button" [disabled]="loading()" (click)="checkIn()">
+						{{ loading() ? 'Enregistrement...' : 'Pointer l’entrée' }}
+					</button>
+				}
+			</div>
+
+			@if (error(); as message) {
+				<p class="mt-6 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700" role="alert" aria-live="polite">{{ message }}</p>
+			}
+		</section>
+
+		<section class="rounded-2xl bg-white p-6 shadow-lg shadow-slate-200/70 sm:p-8" aria-labelledby="sessions-title">
+			<div class="flex items-center justify-between gap-4">
+				<h2 id="sessions-title" class="text-lg font-semibold text-slate-900">Sessions du jour</h2>
+				<span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">{{ sessions().length }} session{{ sessions().length > 1 ? 's' : '' }}</span>
+			</div>
+
+			@if (sessions().length > 0) {
+				<div class="mt-4 divide-y divide-slate-100">
+					@for (session of sessions(); track session.id) {
+						<div class="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between">
+							<div>
+								<p class="font-medium text-slate-800">{{ formatTime(session.checkIn) }} <span class="text-slate-400">→</span> {{ session.checkOut ? formatTime(session.checkOut) : 'En cours' }}</p>
+								<p class="mt-1 text-sm text-slate-500">Durée : {{ formatDuration(session) }}</p>
+							</div>
+							@if (!session.checkOut) {
+								<span class="w-fit rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">En cours</span>
+							}
+						</div>
+					}
+				</div>
+			} @else {
+				<p class="mt-6 text-sm text-slate-500">Aucune session enregistrée aujourd’hui.</p>
+			}
+		</section>
+	</div>
+</main>

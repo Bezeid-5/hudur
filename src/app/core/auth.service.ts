@@ -17,9 +17,10 @@ export class AuthService {
   readonly user$ = authUser(this.auth);
   readonly user = toSignal(this.user$, { initialValue: null });
 
-  async register(name: string, email: string, password: string): Promise<void> {
+  async register(name: string, email: string, password: string): Promise<import('firebase/auth').User> {
     const credential = await createUserWithEmailAndPassword(this.auth, email, password);
     await updateProfile(credential.user, { displayName: name });
+    return credential.user;
   }
 
   async login(email: string, password: string): Promise<void> {

@@ -2,16 +2,19 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth.service';
+import { UserProfileService } from '../../../core/user-profile.service';
 
 @Component({
   selector: 'app-register',
   imports: [ReactiveFormsModule, RouterLink],
+  providers: [UserProfileService],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
 })
 export class RegisterComponent {
   private readonly formBuilder = inject(FormBuilder);
   private readonly authService = inject(AuthService);
+  private readonly userProfileService = inject(UserProfileService);
   private readonly router = inject(Router);
 
   readonly error = signal<string | null>(null);
@@ -32,7 +35,8 @@ export class RegisterComponent {
     this.loading.set(true);
     try {
       const { name, email, password } = this.form.getRawValue();
-      await this.authService.register(name, email, password);
+      const user = await this.authService.register(name, email, password);
+      await this.userProfileService.createEmployeeProfile(user.uid, name, email);
       await this.router.navigateByUrl('/pointage');
     } catch (error: unknown) {
       this.error.set(

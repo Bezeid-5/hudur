@@ -1,9 +1,32 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if false;
+
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.role == 'employee';
+      allow update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.role == resource.data.role;
+      allow delete: if false;
+    }
+
+    match /attendances/{id} {
+      allow read: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.checkIn == request.time
+        && request.resource.data.checkOut == null;
+      allow update: if request.auth != null
+        && resource.data.userId == request.auth.uid
+        && resource.data.checkOut == null
+        && request.resource.data.checkOut == request.time
+        && request.resource.data.checkIn == resource.data.checkIn
+        && request.resource.data.userId == resource.data.userId;
+      allow delete: if false;
     }
   }
 }
