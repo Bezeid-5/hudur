@@ -4,6 +4,7 @@ import { provideRouter } from '@angular/router';
 
 import { AuthService } from '../../../core/auth.service';
 import { AttendanceService } from '../../../core/attendance.service';
+import { ActivityService } from '../../../core/activity.service';
 import { PointageComponent } from './pointage.component';
 
 describe('PointageComponent', () => {
@@ -27,6 +28,14 @@ describe('PointageComponent', () => {
             error: signal(null),
             checkIn: jasmine.createSpy('checkIn'),
             checkOut: jasmine.createSpy('checkOut'),
+          },
+        },
+        {
+          provide: ActivityService,
+          useValue: {
+            activities: signal([]),
+            error: signal(null),
+            createActivity: jasmine.createSpy('createActivity'),
           },
         },
       ],

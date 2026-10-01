@@ -47,13 +47,35 @@
 			@if (sessions().length > 0) {
 				<div class="mt-4 divide-y divide-slate-100">
 					@for (session of sessions(); track session.id) {
-						<div class="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between">
-							<div>
+						<div class="py-4">
+							<div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+								<div>
 								<p class="font-medium text-slate-800">{{ formatTime(session.checkIn) }} <span class="text-slate-400">→</span> {{ session.checkOut ? formatTime(session.checkOut) : 'En cours' }}</p>
 								<p class="mt-1 text-sm text-slate-500">Durée : {{ formatDuration(session) }}</p>
+								<p class="mt-1 text-sm text-slate-500">Activités : {{ totalActivityMinutes(session.id) }} min / durée de session : {{ formatDuration(session) }}</p>
+								</div>
+								<div class="flex items-center gap-2">
+									@if (!session.checkOut) {
+										<span class="w-fit rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">En cours</span>
+									}
+									<button class="rounded-lg border border-indigo-200 px-3 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50 focus:outline-none focus:ring-4 focus:ring-indigo-100" type="button" (click)="selectSession(session.id)">Ajouter une activité</button>
+								</div>
 							</div>
-							@if (!session.checkOut) {
-								<span class="w-fit rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">En cours</span>
+
+							@if (activitiesFor(session.id).length > 0) {
+								<div class="mt-4 space-y-2 rounded-lg bg-slate-50 p-3">
+									@for (activity of activitiesFor(session.id); track activity.id) {
+										<div class="flex items-start justify-between gap-4 text-sm">
+											<div>
+												<p class="font-medium text-slate-700">{{ activity.title }}</p>
+												@if (activity.description) {
+													<p class="mt-1 text-slate-500">{{ activity.description }}</p>
+												}
+											</div>
+											<span class="shrink-0 font-medium text-slate-600">{{ activity.durationMinutes }} min</span>
+										</div>
+									}
+								</div>
 							}
 						</div>
 					}
@@ -62,5 +84,54 @@
 				<p class="mt-6 text-sm text-slate-500">Aucune session enregistrée aujourd’hui.</p>
 			}
 		</section>
+
+		@if (selectedSession(); as session) {
+			<section class="rounded-2xl bg-white p-6 shadow-lg shadow-slate-200/70 sm:p-8" aria-labelledby="activity-form-title">
+				<div class="mb-6">
+					<p class="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">Nouvelle activité</p>
+					<h2 id="activity-form-title" class="mt-2 text-lg font-semibold text-slate-900">Ajouter à la session de {{ formatTime(session.checkIn) }}</h2>
+				</div>
+
+				<form class="space-y-5" [formGroup]="activityForm" (ngSubmit)="addActivity()" novalidate>
+					<div>
+						<label class="mb-2 block text-sm font-medium text-slate-700" for="activity-title">Titre</label>
+						<input class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100" id="activity-title" type="text" formControlName="title" maxlength="100" aria-describedby="activity-title-error" />
+						@if (activityForm.controls.title.touched && activityForm.controls.title.hasError('required')) {
+							<p id="activity-title-error" class="mt-2 text-sm text-red-600" role="alert" aria-live="polite">Le titre est obligatoire.</p>
+						} @else if (activityForm.controls.title.touched && activityForm.controls.title.hasError('maxlength')) {
+							<p id="activity-title-error" class="mt-2 text-sm text-red-600" role="alert" aria-live="polite">Le titre ne peut pas dépasser 100 caractères.</p>
+						}
+					</div>
+
+					<div>
+						<label class="mb-2 block text-sm font-medium text-slate-700" for="activity-duration">Durée (minutes)</label>
+						<input class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100" id="activity-duration" type="number" formControlName="durationMinutes" min="1" max="1440" step="1" aria-describedby="activity-duration-error" />
+						@if (activityForm.controls.durationMinutes.touched && activityForm.controls.durationMinutes.hasError('required')) {
+							<p id="activity-duration-error" class="mt-2 text-sm text-red-600" role="alert" aria-live="polite">La durée est obligatoire.</p>
+						} @else if (activityForm.controls.durationMinutes.touched && activityForm.controls.durationMinutes.hasError('integer')) {
+							<p id="activity-duration-error" class="mt-2 text-sm text-red-600" role="alert" aria-live="polite">La durée doit être un nombre entier.</p>
+						} @else if (activityForm.controls.durationMinutes.touched && (activityForm.controls.durationMinutes.hasError('min') || activityForm.controls.durationMinutes.hasError('max'))) {
+							<p id="activity-duration-error" class="mt-2 text-sm text-red-600" role="alert" aria-live="polite">La durée doit être comprise entre 1 et 1440 minutes.</p>
+						}
+					</div>
+
+					<div>
+						<label class="mb-2 block text-sm font-medium text-slate-700" for="activity-description">Description <span class="font-normal text-slate-400">(optionnelle)</span></label>
+						<textarea class="block min-h-24 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 shadow-sm outline-none transition focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100" id="activity-description" formControlName="description" maxlength="500" aria-describedby="activity-description-error"></textarea>
+						@if (activityForm.controls.description.touched && activityForm.controls.description.hasError('maxlength')) {
+							<p id="activity-description-error" class="mt-2 text-sm text-red-600" role="alert" aria-live="polite">La description ne peut pas dépasser 500 caractères.</p>
+						}
+					</div>
+
+					@if (activityError(); as message) {
+						<p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700" role="alert" aria-live="polite">{{ message }}</p>
+					}
+
+					<button class="w-full rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-200 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500" type="submit" [disabled]="activityForm.invalid || activityLoading()">
+						{{ activityLoading() ? 'Ajout en cours...' : 'Ajouter l’activité' }}
+					</button>
+				</form>
+			</section>
+		}
 	</div>
 </main>
