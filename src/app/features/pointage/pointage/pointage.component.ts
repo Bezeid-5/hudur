@@ -1,6 +1,6 @@
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth.service';
 import { Attendance, AttendanceService } from '../../../core/attendance.service';
 import { Activity, ActivityService } from '../../../core/activity.service';
@@ -10,7 +10,7 @@ const integerValidator: ValidatorFn = (control) =>
 
 @Component({
   selector: 'app-pointage',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './pointage.component.html',
   styleUrl: './pointage.component.css'
 })

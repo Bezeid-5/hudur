@@ -5,7 +5,11 @@
 			<p class="mt-1 text-sm text-slate-600">Bonjour {{ currentUser.displayName || currentUser.email }}</p>
 		}
 	</div>
-	<button class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-200" type="button" (click)="logout()">Se déconnecter</button>
+	<nav class="flex items-center gap-2" aria-label="Navigation principale">
+		<a class="rounded-lg bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700" routerLink="/pointage" aria-current="page">Pointage</a>
+		<a class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50" routerLink="/historique">Historique</a>
+		<button class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-200" type="button" (click)="logout()">Se déconnecter</button>
+	</nav>
 </header>
 
 <main class="min-h-screen bg-slate-100 px-4 py-8 sm:px-8">

@@ -18,5 +18,10 @@ export const routes: Routes = [
 		canActivate: [authGuard],
 		loadComponent: () => import('./features/pointage/pointage/pointage.component').then((module) => module.PointageComponent),
 	},
+	{
+		path: 'historique',
+		canActivate: [authGuard],
+		loadComponent: () => import('./features/historique/historique/historique.component').then((module) => module.HistoriqueComponent),
+	},
 	{ path: '**', redirectTo: 'login' },
 ];
