@@ -18,7 +18,7 @@ export class RegisterComponent {
   readonly loading = signal(false);
   readonly form = this.formBuilder.nonNullable.group({
     name: ['', Validators.required],
-    email: ['', [Validators.required, Validators.email]],
+    email: ['', [Validators.required, Validators.email, Validators.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)]],
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
